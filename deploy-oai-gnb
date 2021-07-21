@@ -1,0 +1,22 @@
+#!/bin/bash
+set -e
+
+HERE=$(dirname "$(readlink --canonicalize "$BASH_SOURCE")")
+
+kubectl delete configmap --selector=app.kubernetes.io/part-of=oai --ignore-not-found=true
+kubectl delete deployments --selector=app.kubernetes.io/part-of=oai --ignore-not-found=true
+kubectl wait pods --selector=app.kubernetes.io/part-of=oai --for=delete || true
+
+function d() {
+    COMPONENT=$1 \
+    AMF_IP=$2 \
+    IMAGE="localhost:5000/oai_gnb:latest" \
+    envsubst < "$HERE/manifests/component.yaml" |
+    kubectl apply -f -
+}
+
+AMF_IP=$(kubectl get pods -l app.kubernetes.io/name=amf -o jsonpath="{.items[*].status.podIP}") \
+envsubst '$AMF_IP'< "$HERE/manifests/gnb-oai-configmap.yaml" |
+kubectl create -f -
+
+d gnb $AMFIP

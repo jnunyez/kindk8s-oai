@@ -300,6 +300,10 @@ data:
 kind: ConfigMap
 metadata:
   creationTimestamp: "2021-07-21T13:34:21Z"
+  labels:
+    app.kubernetes.io/component: 5g
+    app.kubernetes.io/part-of: oai
+    app.kubernetes.io/managed-by: oai
   managedFields:
   - apiVersion: v1
     fieldsType: FieldsV1
@@ -310,7 +314,7 @@ metadata:
     manager: kubectl-create
     operation: Update
     time: "2021-07-21T13:34:21Z"
-  name: gnboai
+  name: gnb
   namespace: default
   resourceVersion: "1519701"
   uid: 79c718f0-6ccd-4902-a0cd-b26c042bb6c7
