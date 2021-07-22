@@ -43,6 +43,8 @@ spec:
           - name: ${COMPONENT}-cfg 
             mountPath: /oai/etc/${COMPONENT}.conf
             subPath: ${COMPONENT}.conf
+          - name: usrp
+            mountPath: /dev/bus/usb
         securityContext:
           capabilities:
             add:
@@ -53,3 +55,6 @@ spec:
       - name: ${COMPONENT}-cfg
         configMap:
           name: $COMPONENT
+      - name: usrp
+        hostPath:
+          path: /dev/bus/usb
