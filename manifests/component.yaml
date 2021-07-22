@@ -35,26 +35,29 @@ spec:
       - name: main 
         image: $IMAGE
         imagePullPolicy: Always
-        command:
-        - tail
-        - -f
-        - /dev/null  
+        #command:
+        #- tail
+        #- -f
+        #- /dev/null  
         volumeMounts: 
           - name: ${COMPONENT}-cfg 
             mountPath: /oai/etc/${COMPONENT}.conf
             subPath: ${COMPONENT}.conf
           - name: usrp
-            mountPath: /dev/bus/usb
+            mountPath: /dev/bus/usb/
+          - name: cgroup
+            mountPath: /sys/fs/cgroup/
         securityContext:
-          capabilities:
-            add:
-            - "NET_RAW" # enables "ping"
-            - "NET_ADMIN" # enabled access to "/dev/net/tun" (not enough)
           privileged: true # HACK to enable "/dev/net/tun"
+      nodeSelector:
+        kubernetes.io/hostname: kind-worker
       volumes:
       - name: ${COMPONENT}-cfg
         configMap:
           name: $COMPONENT
+      - name: cgroup
+        hostPath:
+          path: /sys/fs/cgroup/
       - name: usrp
         hostPath:
-          path: /dev/bus/usb
+          path: /dev/bus/usb/
