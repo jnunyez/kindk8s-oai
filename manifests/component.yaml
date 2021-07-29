@@ -29,16 +29,19 @@ spec:
         app.kubernetes.io/part-of: oai
         app.kubernetes.io/managed-by: oai
     spec:
+      securityContext:
+        runAsUser: 0
+        runAsGroup: 0
       hostname: ${COMPONENT}-1
       subdomain: oai
       containers:
       - name: main 
         image: $IMAGE
         imagePullPolicy: Always
-        #command:
-        #- tail
-        #- -f
-        #- /dev/null  
+        command:
+        - tail
+        - -f
+        - /dev/null  
         volumeMounts: 
           - name: ${COMPONENT}-cfg 
             mountPath: /oai/etc/${COMPONENT}.conf
@@ -54,7 +57,7 @@ spec:
       volumes:
       - name: ${COMPONENT}-cfg
         configMap:
-          name: $COMPONENT
+          name: ${COMPONENT}-oai
       - name: cgroup
         hostPath:
           path: /sys/fs/cgroup/

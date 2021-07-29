@@ -314,7 +314,7 @@ metadata:
     manager: kubectl-create
     operation: Update
     time: "2021-07-21T13:34:21Z"
-  name: gnb
+  name: gnb-oai
   namespace: default
   resourceVersion: "1519701"
   uid: 79c718f0-6ccd-4902-a0cd-b26c042bb6c7

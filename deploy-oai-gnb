@@ -10,7 +10,7 @@ kubectl wait pods --selector=app.kubernetes.io/part-of=oai --for=delete || true
 function d() {
     COMPONENT=$1 \
     AMF_IP=$2 \
-    IMAGE="localhost:5000/oai_gnb:latest" \
+    IMAGE="quay.io/jnunez/oai_gnb:latest" \
     envsubst < "$HERE/manifests/component.yaml" |
     kubectl apply -f -
 }
