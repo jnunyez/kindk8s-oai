@@ -42,18 +42,32 @@ spec:
         - tail
         - -f
         - /dev/null  
+        resources:
+          requests:
+            cpu: 4
+            memory: "8Gi"
+          limits:
+            cpu: 4
+            memory: "8Gi"
         volumeMounts: 
           - name: ${COMPONENT}-cfg 
             mountPath: /oai/etc/${COMPONENT}.conf
             subPath: ${COMPONENT}.conf
           - name: usrp
             mountPath: /dev/bus/usb/
+          - name: cpu
+            mountPath: /sys/devices/system/cpu/
           - name: cgroup
             mountPath: /sys/fs/cgroup/
+          - name: cstate
+            mountPath: /dev/cpu_dma_latency
         securityContext:
-          privileged: true # HACK to enable "/dev/net/tun"
+          privileged: true 
+          capabilities:
+            add: ["SYS_ADMIN","SYS_NICE","SYS_RAWIO","IPC_LOCK"]
       nodeSelector:
         kubernetes.io/hostname: kind-worker
+      schedulerName: default-scheduler
       volumes:
       - name: ${COMPONENT}-cfg
         configMap:
@@ -64,3 +78,9 @@ spec:
       - name: usrp
         hostPath:
           path: /dev/bus/usb/
+      - name: cpu
+        hostPath:
+          path: /sys/devices/system/cpu/
+      - name: cstate
+        hostPath:
+          path: /dev/cpu_dma_latency
