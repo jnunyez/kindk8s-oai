@@ -21,14 +21,28 @@ EOF
 
 #kubelet does not work unless you disable swap
 sudo swapoff -a
+#make swap disable persistent
+sudo sed -i '/ swap / s/^\(.*\)$/#\1/g' /etc/fstab
 
 
-sudo kubeadm init --pod-network-cidr=10.244.0.0/16
+# assure containernetwork-plugins are removed
+sudo apt-get purge containernetworking-plugins
+
+#kubeadm
+sudo kubeadm init --config=kubeadm-config.yaml --apiserver-advertise-address=192.168.1.134 --pod-network-cidr=10.244.0.0/16 --cri-socket=/run/containerd/containerd.sock
+#enable cri on config.tom created by containerd
+
+#check kubelet status
+systemctl enable kubelet
+systemctl status kubelet && journalctl -xeu kubelet
+
+
+
+#use ctrl plane node as worker as well
+kubectl taint nodes --all node-role.kubernetes.io/master-
+
 
 kubectl drain <node name> --delete-emptydir-data --force --ignore-daemonsets
-
-sudo kubeadm init --pod-network-cidr=10.244.0.0/16
-kubectl taint nodes --all node-role.kubernetes.io/master-
 
 
 #clean k8s cluster
