@@ -36,16 +36,15 @@ sudo kubeadm init --config=kubeadm-config.yaml --apiserver-advertise-address=192
 systemctl enable kubelet
 systemctl status kubelet && journalctl -xeu kubelet
 
-
+#deploy cni and check CIDR is equivalent to the one in the yml file
+kubectl apply -f kube-flannel.yml
 
 #use ctrl plane node as worker as well
 kubectl taint nodes --all node-role.kubernetes.io/master-
-
-
-kubectl drain <node name> --delete-emptydir-data --force --ignore-daemonsets
-
+#kubectl taint nodes --all node.kubernetes.io/not-ready-
 
 #clean k8s cluster
+kubectl drain <node name> --delete-emptydir-data --force --ignore-daemonsets
 kubeadm reset
 rm -rf .kube/
 sudo rm -rf /etc/kubernetes/
