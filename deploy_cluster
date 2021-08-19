@@ -2,42 +2,49 @@
 
 set -e
 
+HERE=$(dirname "$(readlink --canonicalize "$BASH_SOURCE")")
 
-sudo apt-get update
-sudo apt-get install -y apt-transport-https ca-certificates curl
+#prerequirements
+apt-get update && apt-get install -y apt-transport-https ca-certificates curl
 
 sudo curl -fsSLo /usr/share/keyrings/kubernetes-archive-keyring.gpg https://packages.cloud.google.com/apt/doc/apt-key.gpg
-
 echo "deb [signed-by=/usr/share/keyrings/kubernetes-archive-keyring.gpg] https://apt.kubernetes.io/ kubernetes-xenial main" | sudo tee /etc/apt/sources.list.d/kubernetes.list
 
-sudo apt-get update
+#install last version of kube* packages
 sudo apt-get install -y kubelet kubeadm kubectl
 
-
+# apply sysctl changes
 cat <<EOF | sudo tee /etc/sysctl.d/k8s.conf
 net.bridge.bridge-nf-call-ip6tables = 1
 net.bridge.bridge-nf-call-iptables = 1
+net.ipv4.ip_forward = 1
 EOF
+sysctl -a
 
 #kubelet does not work unless you disable swap
 sudo swapoff -a
-#make swap disable persistent
+#make swap disable persistent to reboots
 sudo sed -i '/ swap / s/^\(.*\)$/#\1/g' /etc/fstab
 
 
-# assure containernetwork-plugins are removed
-sudo apt-get purge containernetworking-plugins
-
-#kubeadm
-sudo kubeadm init --config=kubeadm-config.yaml --apiserver-advertise-address=192.168.1.134 --pod-network-cidr=10.244.0.0/16 --cri-socket=/run/containerd/containerd.sock
+# this package conflicts with cni so we remove it
+apt-get purge -y containernetworking-plugins && apt-get install -y containerd.io
 #enable cri on config.tom created by containerd
+#enable systemd cgroup
+cp $HERE/manifests/containerd/config.toml /etc/containerd/config.toml && systemctl restart containerd
 
-#check kubelet status
-systemctl enable kubelet
+
+#enable kubelet and configure systemd cgroup
+cp $HERE/manifests/kubelet/kubelet.service /lib/systemd/system/kubelet.service
+systemctl daemon-reload && systemctl enable kubelet
 systemctl status kubelet && journalctl -xeu kubelet
 
+#init ctrl plane scheduler etcd and kubelet
+#sudo kubeadm init --config=kubeadm-config.yaml --apiserver-advertise-address=192.168.1.134 --pod-network-cidr=10.244.0.0/16 --cri-socket=/run/containerd/containerd.sock
+kubeadm init --config $HERE/manifests/kubeadm-config.yaml --v=9
+
 #deploy cni and check CIDR is equivalent to the one in the yml file
-kubectl apply -f kube-flannel.yml
+kubectl apply -f $HERE/manifests/kube-flannel.yml
 
 #use ctrl plane node as worker as well
 kubectl taint nodes --all node-role.kubernetes.io/master-
