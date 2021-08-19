@@ -65,8 +65,8 @@ spec:
           privileged: true 
           capabilities:
             add: ["SYS_ADMIN","SYS_NICE","SYS_RAWIO","IPC_LOCK"]
-      nodeSelector:
-        kubernetes.io/hostname: kind-worker
+            #nodeSelector:
+            #kubernetes.io/hostname: hack-things
       schedulerName: default-scheduler
       volumes:
       - name: ${COMPONENT}-cfg
