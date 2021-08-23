@@ -76,6 +76,16 @@ function cl(){
   rm -rf /root/.kube/
 }
 
+function mu(){
+	# git clone repo
+	# cd multusctl/multusctl
+	# go build
+	./multusctl --wait 
+	./multusctl create myattachment --url=assets/config.yaml
+    ./multusctl list
+    ./multusctl get myattachment
+}
+
 pa
 sw
 ku
