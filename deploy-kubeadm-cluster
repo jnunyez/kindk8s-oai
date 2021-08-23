@@ -80,15 +80,31 @@ function mu(){
 	# git clone repo
 	# cd multusctl/multusctl
 	# go build
-	./multusctl --wait 
-	./multusctl create myattachment --url=assets/config.yaml
-    ./multusctl list
-    ./multusctl get myattachment
+  # install SDN
+  kubectl create -f  $HERE/assets/kube-flannel.yml
+ 
+  #create macvlan bridge
+  sudo ip link add data-plane-vlan link $MASTER_IFACE type macvlan mode bridge
+  sudo ip link set data-plane-vlan up
+
+  #install multus
+  ./multusctl install --wait
+  #create network attachment called 'netat' 
+  ./multusctl create netat --url=./assets/config-macvlan.yml
+
+  #create pod using data-plane-vlan using the new network attachment
+  kubectl create -f ./assets/pod.yml 
+  #install multus
+	#./multusctl --wait 
+	#./multusctl create netat --url=assets/config.yaml
+  #./multusctl list
+  #./multusctl get myattachment
 }
 
 pa
 sw
 ku
 in
+mu
 #clean cluster
 #cl
