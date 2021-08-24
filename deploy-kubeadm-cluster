@@ -56,13 +56,20 @@ function in() {
   #kubeadm init --config $HERE/manifests/kubeadm-config.yaml --v=9
 
   #crio
+  systemctl start crio && systemctl enable crio
   kubeadm init --config $HERE/manifests/kubeadmcrio-config.yaml --v=9
 
-  #deploy cni and check CIDR is equivalent to the one in the yml file
-  kubectl apply -f $HERE/manifests/kube-flannel.yml
+  #to start using your cluster as root
+  export KUBECONFIG=/etc/kubernetes/admin.conf
 
   #use ctrl plane node as worker as well
   kubectl taint nodes --all node-role.kubernetes.io/master-
+
+}
+
+function sdn {
+  #deploy cni and check CIDR is equivalent to the one in the yml file
+  kubectl apply -f $HERE/manifests/kube-flannel.yml
 }
 
 function cl(){
@@ -105,6 +112,7 @@ pa
 sw
 ku
 in
-mu
+
+#mu
 #clean cluster
 #cl
